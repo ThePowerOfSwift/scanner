@@ -43,6 +43,11 @@ class Document : Equatable {
         }
         return nil
     }
+    
+    func deletePage(page:Page) {
+        self.pages.removeAtIndex(find(self.pages, page)!)
+        self.store.itemsToBeDeleted.append(page.imageName)
+    }
 }
 
 func ==(a:Document, b:Document) -> Bool {
@@ -50,15 +55,19 @@ func ==(a:Document, b:Document) -> Bool {
 }
 
 class DocumentStore {
+    // TODO: keep track of documents added/updated/deleted since last save and include them in the notification
+    static let StoreSavedNotification = "StoreSavedNotification"
+    
     private let fileManager:NSFileManager
     
     let path:String
-    private(set) var documents:[Document]
+    private(set) var documents:[Document] = []
+    
+    private var itemsToBeDeleted:[String] = []
     
     init?(_ fileManager:NSFileManager, _ path:String) {
         self.fileManager = fileManager
         self.path = path
-        self.documents = []
         
         if !self.fileManager.fileExistsAtPath(path) {
             var error:NSErrorPointer = nil
@@ -101,6 +110,13 @@ class DocumentStore {
         return document
     }
     
+    func deleteDocument(document:Document) {
+        let document = self.documents.removeAtIndex(find(self.documents, document)!)
+        for page in document.pages {
+            self.itemsToBeDeleted.append(page.imageName)
+        }
+    }
+    
     private func pathForName(name:String) -> String {
         return self.path.stringByAppendingPathComponent(name)
     }
@@ -108,6 +124,11 @@ class DocumentStore {
     private func storeDataWithName(data:NSData, name:String) -> Bool {
         let path = self.pathForName(name)
         return self.fileManager.createFileAtPath(path, contents: data, attributes: nil)
+    }
+    
+    private func deleteDataWithName(name:String) -> Bool {
+        let path = self.pathForName(name)
+        return self.fileManager.removeItemAtPath(path, error: nil)
     }
     
     private func loadDataWithName(name:String) -> NSData? {
@@ -135,7 +156,17 @@ class DocumentStore {
         }
         
         let documentsData = NSKeyedArchiver.archivedDataWithRootObject(archivedRepresentation)
-        return self.storeDataWithName(documentsData, name: "info")
+        let didStore = self.storeDataWithName(documentsData, name: "info")
+        
+        if didStore {
+            for itemName in self.itemsToBeDeleted {
+                self.deleteDataWithName(itemName) // TODO: error handling
+            }
+            self.itemsToBeDeleted = []
+            
+            NSNotificationCenter.defaultCenter().postNotificationName(DocumentStore.StoreSavedNotification, object: self, userInfo: nil)
+        }
+        
+        return didStore
     }
-    
 }

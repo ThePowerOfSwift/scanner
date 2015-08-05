@@ -18,36 +18,45 @@ class DocumentListItem {
     
 }
 
-class DocumentListViewModel : ViewModel {
+class DocumentListViewModel {
+    static let ViewModelChangedNotification = "DocumentListViewModelChangedNotification"
     
     private let documentStore:DocumentStore
+    private var observerToken:NSObjectProtocol!
     
-    private(set) var documents:[DocumentListItem]? {
-        didSet {
-            self.notifyObservers()
-        }
-    }
+    private(set) var documents:[DocumentListItem]?
     
     init(_ documentStore:DocumentStore) {
         self.documentStore = documentStore
         
-        super.init()
+        self.observerToken = NSNotificationCenter.defaultCenter().addObserverForName(DocumentStore.StoreSavedNotification, object: self.documentStore, queue: nil) {
+            [unowned self] (notification) -> Void in
+            self.refresh()
+        }
         
         self.refresh()
     }
     
-    func createDocumentWithName(name:String) -> Void {
+    deinit {
+        NSNotificationCenter.defaultCenter().removeObserver(self.observerToken)
+    }
+    
+    func createDocumentWithName(name:String) {
         let document = documentStore.createDocument()
         document.title = name
         documentStore.save()
-        refresh()
     }
     
-    private func refresh() -> Void {
+    func deleteDocumentAtIndex(index:Int) {
+        self.documentStore.deleteDocument(self.documentStore.documents[index])
+        documentStore.save()
+    }
+    
+    private func refresh() {
         self.documents = documentStore.documents.map {
             (let document) -> DocumentListItem in
             return DocumentListItem(document.title)
         }
+        NSNotificationCenter.defaultCenter().postNotificationName(DocumentListViewModel.ViewModelChangedNotification, object: self, userInfo: nil)
     }
-    
 }

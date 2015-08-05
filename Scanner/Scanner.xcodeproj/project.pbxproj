@@ -16,7 +16,6 @@
 		6723FFA11B56FB0F0013D255 /* DocumentStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6723FFA01B56FB0F0013D255 /* DocumentStore.swift */; };
 		67A57E061B713437003781EF /* picture.png in Resources */ = {isa = PBXBuildFile; fileRef = 67A57E051B713437003781EF /* picture.png */; };
 		67A57E091B7151E2003781EF /* DocumentsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67A57E081B7151E2003781EF /* DocumentsViewModel.swift */; };
-		67C966E61B7162A5001AE811 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67C966E51B7162A5001AE811 /* ViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,7 +42,6 @@
 		6723FFA01B56FB0F0013D255 /* DocumentStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DocumentStore.swift; sourceTree = "<group>"; };
 		67A57E051B713437003781EF /* picture.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = picture.png; sourceTree = "<group>"; };
 		67A57E081B7151E2003781EF /* DocumentsViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DocumentsViewModel.swift; sourceTree = "<group>"; };
-		67C966E51B7162A5001AE811 /* ViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -134,7 +132,6 @@
 			isa = PBXGroup;
 			children = (
 				67A57E081B7151E2003781EF /* DocumentsViewModel.swift */,
-				67C966E51B7162A5001AE811 /* ViewModel.swift */,
 			);
 			name = ViewModel;
 			sourceTree = "<group>";
@@ -250,7 +247,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				6723FF821B56F6900013D255 /* DocumentListViewController.swift in Sources */,
-				67C966E61B7162A5001AE811 /* ViewModel.swift in Sources */,
 				67A57E091B7151E2003781EF /* DocumentsViewModel.swift in Sources */,
 				6723FFA11B56FB0F0013D255 /* DocumentStore.swift in Sources */,
 				6723FF801B56F6900013D255 /* AppDelegate.swift in Sources */,

@@ -11,21 +11,23 @@ import UIKit
 class DocumentListViewController:
 UIViewController,
 UITableViewDelegate,
-UITableViewDataSource,
-ViewModelObserver {
+UITableViewDataSource {
     
     @IBOutlet weak var tableView: UITableView!
     
     var viewModel:DocumentListViewModel!
-    weak var viewModelObserverToken:ViewModel.ObserverToken!
+    private var observerToken:NSObjectProtocol!
     
     deinit {
-        self.viewModel.removeObserver(self.viewModelObserverToken)
+        NSNotificationCenter.defaultCenter().removeObserver(observerToken)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.viewModelObserverToken = self.viewModel.addObserver(self)
+        self.observerToken = NSNotificationCenter.defaultCenter().addObserverForName(DocumentListViewModel.ViewModelChangedNotification, object: self.viewModel, queue: nil) {
+            [unowned self] (notification) -> Void in
+            self.tableView.reloadData()
+        }
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -40,6 +42,18 @@ ViewModelObserver {
         let cell = UITableViewCell(style: UITableViewCellStyle.Default, reuseIdentifier: nil)
         cell.textLabel!.text = self.viewModel.documents![indexPath.row].title
         return cell
+    }
+    
+    func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+        self.viewModel.deleteDocumentAtIndex(indexPath.row)
+    }
+    
+    func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(tableView: UITableView, editingStyleForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCellEditingStyle {
+        return UITableViewCellEditingStyle.Delete
     }
 
     @IBAction func addButtonPressed(sender: AnyObject) {
@@ -62,10 +76,6 @@ ViewModelObserver {
         documentNamePrompt.addAction(addAction);
         
         self.presentViewController(documentNamePrompt, animated:true, completion:nil)
-    }
-    
-    func viewModelChanged(viewModel: ViewModel) {
-        self.tableView.reloadData()
     }
 }
 
