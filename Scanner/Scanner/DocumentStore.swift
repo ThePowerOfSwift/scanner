@@ -8,12 +8,24 @@
 
 import Foundation
 import UIKit
+import ImageIO
 
 class Page : Equatable {
+    unowned private let store:DocumentStore
+    
     private let imageName:String
     
-    init(_ imageName:String) {
+    init(_ store:DocumentStore, _ imageName:String) {
+        self.store = store
         self.imageName = imageName
+    }
+    
+    func loadImage() -> UIImage? {
+        return UIImage(contentsOfFile: self.store.pathForName(self.imageName))
+    }
+    
+    func loadThumbnail() -> UIImage? {
+        return thumbnailFromImage(self.store.pathForName(self.imageName))
     }
 }
 
@@ -22,7 +34,7 @@ func ==(a:Page, b:Page) -> Bool {
 }
 
 class Document : Equatable {
-    let store:DocumentStore
+    unowned private let store:DocumentStore
     
     var title:String?
     private(set) var pages:[Page] = []
@@ -35,7 +47,7 @@ class Document : Equatable {
         let imageName = NSUUID.new().UUIDString
         if let imageData = UIImageJPEGRepresentation(image, 0.9) {
             if self.store.storeDataWithName(imageData, name: imageName) {
-                let page = Page(imageName)
+                let page = Page(self.store, imageName)
                 self.pages.append(page)
                 
                 return page
@@ -65,7 +77,7 @@ class DocumentStore {
     
     private var itemsToBeDeleted:[String] = []
     
-    init?(_ fileManager:NSFileManager, _ path:String) {
+    init?(fileManager:NSFileManager, path:String) {
         self.fileManager = fileManager
         self.path = path
         
@@ -88,7 +100,7 @@ class DocumentStore {
                             let imageName = archivedPage["imageName"] as? String
                             
                             if imageName != nil {
-                                let page = Page(imageName!)
+                                let page = Page(self, imageName!)
                                 document.pages.append(page)
                             }
                         }

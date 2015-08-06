@@ -12,21 +12,18 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    
-    private(set) var documentStore:DocumentStore!
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        let navigationController = self.window!.rootViewController! as! UINavigationController
-        let documentListViewController = navigationController.topViewController as! DocumentListViewController
         
         let documentStorePath = NSHomeDirectory()
             .stringByAppendingPathComponent("Documents")
             .stringByAppendingPathComponent("DocumentStore")
         
-        self.documentStore = DocumentStore(NSFileManager.defaultManager(), documentStorePath)
+        let documentStore = DocumentStore(fileManager: NSFileManager.defaultManager(), path: documentStorePath)
+        let workflow = Workflow()
         
-        let documentListViewModel = DocumentListViewModel(self.documentStore)
-        documentListViewController.viewModel = documentListViewModel
+        ViewModelFactory.sharedInstance.documentStore = documentStore
+        ViewModelFactory.sharedInstance.workflow = workflow
         
         return true
     }

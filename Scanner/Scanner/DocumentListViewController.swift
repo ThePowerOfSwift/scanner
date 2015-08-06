@@ -9,13 +9,13 @@
 import UIKit
 
 class DocumentListViewController:
-UIViewController,
-UITableViewDelegate,
-UITableViewDataSource {
+    UIViewController,
+    UITableViewDelegate,
+    UITableViewDataSource {
     
     @IBOutlet weak var tableView: UITableView!
     
-    var viewModel:DocumentListViewModel!
+    private var viewModel:DocumentListViewModel!
     private var observerToken:NSObjectProtocol!
     
     deinit {
@@ -24,6 +24,7 @@ UITableViewDataSource {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.viewModel = ViewModelFactory.sharedInstance.documentListViewModel()
         self.observerToken = NSNotificationCenter.defaultCenter().addObserverForName(DocumentListViewModel.ViewModelChangedNotification, object: self.viewModel, queue: nil) {
             [unowned self] (notification) -> Void in
             self.tableView.reloadData()
@@ -55,6 +56,12 @@ UITableViewDataSource {
     func tableView(tableView: UITableView, editingStyleForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCellEditingStyle {
         return UITableViewCellEditingStyle.Delete
     }
+    
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+        self.viewModel.didSelectDocumentAtIndex(indexPath.row)
+        self.performSegueWithIdentifier("ShowPagesSegue", sender: self)
+    }
 
     @IBAction func addButtonPressed(sender: AnyObject) {
         let documentNamePrompt = UIAlertController(title: "Document Name", message: "Enter the document's name", preferredStyle: UIAlertControllerStyle.Alert)
@@ -73,7 +80,7 @@ UITableViewDataSource {
         }
         
         documentNamePrompt.addAction(cancelAction)
-        documentNamePrompt.addAction(addAction);
+        documentNamePrompt.addAction(addAction)
         
         self.presentViewController(documentNamePrompt, animated:true, completion:nil)
     }

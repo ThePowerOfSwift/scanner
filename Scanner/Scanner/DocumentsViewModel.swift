@@ -22,12 +22,14 @@ class DocumentListViewModel {
     static let ViewModelChangedNotification = "DocumentListViewModelChangedNotification"
     
     private let documentStore:DocumentStore
+    private let workflow:Workflow
     private var observerToken:NSObjectProtocol!
     
     private(set) var documents:[DocumentListItem]?
     
-    init(_ documentStore:DocumentStore) {
+    init(documentStore:DocumentStore, workflow:Workflow) {
         self.documentStore = documentStore
+        self.workflow = workflow
         
         self.observerToken = NSNotificationCenter.defaultCenter().addObserverForName(DocumentStore.StoreSavedNotification, object: self.documentStore, queue: nil) {
             [unowned self] (notification) -> Void in
@@ -50,6 +52,10 @@ class DocumentListViewModel {
     func deleteDocumentAtIndex(index:Int) {
         self.documentStore.deleteDocument(self.documentStore.documents[index])
         documentStore.save()
+    }
+    
+    func didSelectDocumentAtIndex(index:Int) {
+        self.workflow.selectDocument(self.documentStore.documents[index])
     }
     
     private func refresh() {
