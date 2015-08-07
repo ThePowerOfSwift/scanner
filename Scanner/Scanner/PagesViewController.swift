@@ -8,6 +8,12 @@
 
 import UIKit
 
+class ShowPageSegue: UIStoryboardSegue {
+    override func perform() {
+        self.sourceViewController.presentViewController(self.destinationViewController as! UIViewController, animated: true, completion: nil)
+    }
+}
+
 class PageCollectionViewCell: UICollectionViewCell {
     
     @IBOutlet weak var imageView: UIImageView!
@@ -64,7 +70,7 @@ class PagesViewController:
     }
     
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
-        
+        self.performSegueWithIdentifier("ShowPageSegue", sender: self)
     }
     
     func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
@@ -80,5 +86,9 @@ class PagesViewController:
         cell.pageNumberLabel.text = "\(indexPath.row + 1)"
         cell.imageView.image = self.viewModel.pages[indexPath.row].thumbnail
         return cell
+    }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        
     }
 }

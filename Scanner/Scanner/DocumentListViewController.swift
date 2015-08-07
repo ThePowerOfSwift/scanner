@@ -45,9 +45,7 @@ class DocumentListViewController:
         return cell
     }
     
-    func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        self.viewModel.deleteDocumentAtIndex(indexPath.row)
-    }
+    func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {}
     
     func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
         return true
@@ -55,6 +53,46 @@ class DocumentListViewController:
     
     func tableView(tableView: UITableView, editingStyleForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCellEditingStyle {
         return UITableViewCellEditingStyle.Delete
+    }
+    
+    func tableView(tableView: UITableView, editActionsForRowAtIndexPath indexPath: NSIndexPath) -> [AnyObject]? {
+        return [
+            UITableViewRowAction(style: UITableViewRowActionStyle.Default, title: "Delete", handler: {
+                [unowned self] (action, indexPath) -> Void in
+                self.viewModel.deleteDocumentAtIndex(indexPath.row)
+            }),
+            UITableViewRowAction(style: UITableViewRowActionStyle.Normal, title: "Rename", handler: {
+                [unowned self] (action, indexPath) -> Void in
+                self.tableView.setEditing(false, animated: true)
+                self.renameDocumentAtIndex(indexPath.row)
+            })
+        ]
+    }
+    
+    private func renameDocumentAtIndex(index:Int) {
+        
+        let renamePrompt = UIAlertController(title: "Rename Document", message: "Enter the new title", preferredStyle: UIAlertControllerStyle.Alert)
+        renamePrompt.addTextFieldWithConfigurationHandler {
+            (let textField) in
+            textField.text = self.viewModel.documents![index].title
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Default) {
+            [unowned self] action in
+            self.dismissViewControllerAnimated(true, completion: nil)
+        }
+        
+        let addAction = UIAlertAction(title: "Rename", style: UIAlertActionStyle.Default) {
+            [unowned self, unowned renamePrompt] action in
+            let nameTextField = renamePrompt.textFields![0] as! UITextField
+            self.viewModel.renameDocumentAtIndex(index, newTitle:nameTextField.text)
+            self.dismissViewControllerAnimated(true, completion: nil)
+        }
+        
+        renamePrompt.addAction(cancelAction)
+        renamePrompt.addAction(addAction)
+        
+        self.presentViewController(renamePrompt, animated:true, completion:nil)
     }
     
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {

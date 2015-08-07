@@ -154,11 +154,30 @@
                     <navigationItem key="navigationItem" title="Pages" id="UpB-nJ-ENr"/>
                     <connections>
                         <outlet property="collectionView" destination="BSe-ic-mNh" id="TZw-oR-ycN"/>
+                        <segue destination="ykg-BS-nwf" kind="custom" identifier="ShowPageSegue" customClass="ShowPageSegue" customModule="Scanner" customModuleProvider="target" id="ueI-59-pe1"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Sg3-v7-IfZ" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="150" y="1099"/>
+        </scene>
+        <!--Page-->
+        <scene sceneID="0Sm-AM-aMB">
+            <objects>
+                <viewController title="Page" id="ykg-BS-nwf" customClass="PageViewController" customModule="Scanner" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="EFH-Hc-Wbn"/>
+                        <viewControllerLayoutGuide type="bottom" id="Acu-D1-doC"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="gnv-3W-Kgv">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="UcW-ke-6hm" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="874" y="1106"/>
         </scene>
     </scenes>
 </document>

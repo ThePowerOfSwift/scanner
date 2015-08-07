@@ -54,6 +54,11 @@ class DocumentListViewModel {
         documentStore.save()
     }
     
+    func renameDocumentAtIndex(index:Int, newTitle:String) {
+        self.documentStore.documents[index].title = newTitle
+        self.documentStore.save()
+    }
+    
     func didSelectDocumentAtIndex(index:Int) {
         self.workflow.selectDocument(self.documentStore.documents[index])
     }

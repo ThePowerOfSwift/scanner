@@ -21,6 +21,7 @@
 		67C966EC1B73DD6E001AE811 /* ViewModelFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67C966EB1B73DD6E001AE811 /* ViewModelFactory.swift */; };
 		67C966EE1B73E1A7001AE811 /* PagesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67C966ED1B73E1A7001AE811 /* PagesViewModel.swift */; };
 		67C966F21B7400C4001AE811 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67C966F11B7400C4001AE811 /* Utilities.swift */; };
+		67C966F41B750622001AE811 /* PageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67C966F31B750622001AE811 /* PageViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +53,7 @@
 		67C966EB1B73DD6E001AE811 /* ViewModelFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewModelFactory.swift; sourceTree = "<group>"; };
 		67C966ED1B73E1A7001AE811 /* PagesViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PagesViewModel.swift; sourceTree = "<group>"; };
 		67C966F11B7400C4001AE811 /* Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
+		67C966F31B750622001AE811 /* PageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PageViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -156,6 +158,7 @@
 				6723FF831B56F6900013D255 /* Main.storyboard */,
 				6723FF811B56F6900013D255 /* DocumentListViewController.swift */,
 				67C966E71B73B42A001AE811 /* PagesViewController.swift */,
+				67C966F31B750622001AE811 /* PageViewController.swift */,
 			);
 			name = View;
 			sourceTree = "<group>";
@@ -262,6 +265,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				67C966EA1B73B591001AE811 /* Workflow.swift in Sources */,
+				67C966F41B750622001AE811 /* PageViewController.swift in Sources */,
 				6723FF821B56F6900013D255 /* DocumentListViewController.swift in Sources */,
 				67A57E091B7151E2003781EF /* DocumentsViewModel.swift in Sources */,
 				67C966EE1B73E1A7001AE811 /* PagesViewModel.swift in Sources */,
