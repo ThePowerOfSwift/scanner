@@ -9,7 +9,7 @@
 import UIKit
 import ImageIO
 
-class PageViewModel {
+class PageItemViewModel {
     let thumbnail:UIImage
     
     init(_ thumbnail:UIImage) {
@@ -32,7 +32,7 @@ class PagesViewModel {
         }
     }
     
-    private(set) var pages:[PageViewModel] = []
+    private(set) var pages:[PageItemViewModel] = []
     
     init(documentStore:DocumentStore, workflow:Workflow) {
         self.documentStore = documentStore
@@ -56,11 +56,15 @@ class PagesViewModel {
         self.documentStore.save()
     }
     
+    func selectPageAtIndex(index:Int) {
+        self.workflow.selectPage(self.document.pages[index])
+    }
+    
     func refresh() {
         self.pages = self.document.pages.map {
-            (let page) -> PageViewModel in
+            (let page) -> PageItemViewModel in
             let image = page.loadThumbnail()!
-            return PageViewModel(image) // TODO: error handling
+            return PageItemViewModel(image) // TODO: error handling
         }
         NSNotificationCenter.defaultCenter().postNotificationName(PagesViewModel.ViewModelChangedNotification, object: self)
     }

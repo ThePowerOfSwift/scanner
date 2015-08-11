@@ -21,4 +21,8 @@ class ViewModelFactory {
     func pagesViewModel() -> PagesViewModel {
         return PagesViewModel(documentStore: self.documentStore, workflow: self.workflow)
     }
+    
+    func pageViewModel() -> PageViewModel {
+        return PageViewModel(documentStore: self.documentStore, workflow: self.workflow)
+    }
 }

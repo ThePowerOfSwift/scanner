@@ -8,9 +8,47 @@
 
 import UIKit
 
-class ShowPageSegue: UIStoryboardSegue {
+class ShowPageSegue: UIStoryboardSegue, UIViewControllerAnimatedTransitioning, UIViewControllerTransitioningDelegate {
+    var cell:PageCollectionViewCell!
+    
     override func perform() {
-        self.sourceViewController.presentViewController(self.destinationViewController as! UIViewController, animated: true, completion: nil)
+        let destination = self.destinationViewController as! UIViewController
+        destination.transitioningDelegate = self
+        self.sourceViewController.presentViewController(destination, animated:true, completion: {
+            destination.transitioningDelegate = nil
+        })
+    }
+    
+    func animationControllerForPresentedController(presented: UIViewController, presentingController presenting: UIViewController, sourceController source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return self
+    }
+    
+    func transitionDuration(transitionContext: UIViewControllerContextTransitioning) -> NSTimeInterval {
+        return 0.3
+    }
+    
+    func animateTransition(transitionContext: UIViewControllerContextTransitioning) {
+        let toViewController = transitionContext.viewControllerForKey(UITransitionContextToViewControllerKey)!
+        let containerView = transitionContext.containerView()
+        let fromFrame = containerView.convertRect(self.cell.imageView.bounds, fromView: self.cell)
+        let toFrame = transitionContext.finalFrameForViewController(toViewController)
+        let snapshot = UIImageView(image: self.cell.imageView.image)
+        snapshot.contentMode = UIViewContentMode.ScaleAspectFill
+        
+        containerView.addSubview(snapshot)
+        snapshot.frame = fromFrame
+        UIView.animateWithDuration(0.3, animations: {
+            snapshot.frame = toFrame
+        }, completion: {
+            (completed) in
+            
+            snapshot.removeFromSuperview()
+            
+            containerView.addSubview(toViewController.view)
+            toViewController.view.frame = toFrame
+            
+            transitionContext.completeTransition(true)
+        })
     }
 }
 
@@ -21,13 +59,18 @@ class PageCollectionViewCell: UICollectionViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        self.imageView.layer.cornerRadius = 3
-        self.imageView.layer.masksToBounds = true
+        self.imageView.layer.borderColor = UIColor.blueColor().CGColor
     }
     
     override func prepareForReuse() {
         super.prepareForReuse()
         self.imageView.image = nil
+    }
+    
+    override var selected:Bool {
+        didSet {
+            self.imageView.layer.borderWidth = selected ? 3 : 0
+        }
     }
 }
 
@@ -48,6 +91,7 @@ class PagesViewController:
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         self.viewModel = ViewModelFactory.sharedInstance.pagesViewModel()
         self.navigationItem.title = self.viewModel.documentTitle
         
@@ -70,7 +114,9 @@ class PagesViewController:
     }
     
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
-        self.performSegueWithIdentifier("ShowPageSegue", sender: self)
+        collectionView.deselectItemAtIndexPath(indexPath, animated: true)
+        self.viewModel.selectPageAtIndex(indexPath.row)
+        self.performSegueWithIdentifier("ShowPageSegue", sender: collectionView.cellForItemAtIndexPath(indexPath))
     }
     
     func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
@@ -89,6 +135,9 @@ class PagesViewController:
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        
+        if segue.identifier == "ShowPageSegue" {
+            let segue = segue as! ShowPageSegue
+            segue.cell = sender as! PageCollectionViewCell
+        }
     }
 }

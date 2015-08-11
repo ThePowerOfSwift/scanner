@@ -11,9 +11,14 @@ import Foundation
 class Workflow {
     
     private(set) var selectedDocument:Document?
+    private(set) var selectedPage:Page?
     
     func selectDocument(document:Document) {
         self.selectedDocument = document
+    }
+    
+    func selectPage(page:Page) {
+        self.selectedPage = page
     }
     
 }

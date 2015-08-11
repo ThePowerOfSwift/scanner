@@ -59,7 +59,7 @@ class DocumentListViewModel {
         self.documentStore.save()
     }
     
-    func didSelectDocumentAtIndex(index:Int) {
+    func selectDocumentAtIndex(index:Int) {
         self.workflow.selectDocument(self.documentStore.documents[index])
     }
     

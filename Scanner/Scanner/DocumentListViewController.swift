@@ -97,7 +97,7 @@ class DocumentListViewController:
     
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        self.viewModel.didSelectDocumentAtIndex(indexPath.row)
+        self.viewModel.selectDocumentAtIndex(indexPath.row)
         self.performSegueWithIdentifier("ShowPagesSegue", sender: self)
     }
 
@@ -121,6 +121,10 @@ class DocumentListViewController:
         documentNamePrompt.addAction(addAction)
         
         self.presentViewController(documentNamePrompt, animated:true, completion:nil)
+    }
+    
+    @IBAction func unwindToDocuments(segue:UIStoryboardSegue) {
+        
     }
 }
 
