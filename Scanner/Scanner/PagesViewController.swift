@@ -32,17 +32,18 @@ class ShowPageSegue: UIStoryboardSegue, UIViewControllerAnimatedTransitioning, U
         let containerView = transitionContext.containerView()
         let fromFrame = containerView.convertRect(self.cell.imageView.bounds, fromView: self.cell)
         let toFrame = transitionContext.finalFrameForViewController(toViewController)
-        let snapshot = UIImageView(image: self.cell.imageView.image)
-        snapshot.contentMode = UIViewContentMode.ScaleAspectFill
         
-        containerView.addSubview(snapshot)
-        snapshot.frame = fromFrame
+        let animatedImageView = UIImageView(image: self.cell.imageView.image)
+        animatedImageView.contentMode = UIViewContentMode.ScaleAspectFill
+        containerView.addSubview(animatedImageView)
+        animatedImageView.frame = fromFrame
+        
         UIView.animateWithDuration(0.3, animations: {
-            snapshot.frame = toFrame
+            animatedImageView.frame = toFrame
         }, completion: {
             (completed) in
             
-            snapshot.removeFromSuperview()
+            animatedImageView.removeFromSuperview()
             
             containerView.addSubview(toViewController.view)
             toViewController.view.frame = toFrame
