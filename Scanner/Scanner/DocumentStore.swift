@@ -14,18 +14,24 @@ class Page : Equatable {
     unowned private let store:DocumentStore
     
     private let imageName:String
+    var cropRect:CGRect
     
-    init(_ store:DocumentStore, _ imageName:String) {
+    private init(store:DocumentStore, imageName:String, cropRect:CGRect) {
         self.store = store
         self.imageName = imageName
+        self.cropRect = cropRect
+    }
+    
+    func loadRawImage() -> UIImage? {
+        return imageAtPath(self.store.pathForName(self.imageName))
     }
     
     func loadImage() -> UIImage? {
-        return UIImage(contentsOfFile: self.store.pathForName(self.imageName))
+        return imageAtPath(self.store.pathForName(self.imageName), self.cropRect)
     }
     
     func loadThumbnail() -> UIImage? {
-        return thumbnailFromImage(self.store.pathForName(self.imageName))
+        return thumbnailFromImage(self.store.pathForName(self.imageName), self.cropRect)
     }
 }
 
@@ -47,7 +53,7 @@ class Document : Equatable {
         let imageName = NSUUID.new().UUIDString
         if let imageData = UIImageJPEGRepresentation(image, 0.9) {
             if self.store.storeDataWithName(imageData, name: imageName) {
-                let page = Page(self.store, imageName)
+                let page = Page(store: self.store, imageName: imageName, cropRect: CGRect(origin: CGPointZero, size: image.size))
                 self.pages.append(page)
                 
                 return page
@@ -98,9 +104,11 @@ class DocumentStore {
                         
                         for archivedPage in archivedPages {
                             let imageName = archivedPage["imageName"] as? String
+                            let cropRectString = archivedPage["cropRect"] as? String
+                            let cropRect:CGRect? = cropRectString != nil ? CGRectFromString(cropRectString) : nil
                             
-                            if imageName != nil {
-                                let page = Page(self, imageName!)
+                            if imageName != nil && cropRect != nil {
+                                let page = Page(store: self, imageName: imageName!, cropRect: cropRect!)
                                 document.pages.append(page)
                             }
                         }
@@ -157,7 +165,8 @@ class DocumentStore {
             archivedDocument["pages"] = document.pages.map {
                 (let page) -> [String:AnyObject] in
                 return [
-                    "imageName" : page.imageName
+                    "imageName" : page.imageName,
+                    "cropRect" : NSStringFromCGRect(page.cropRect) as String
                 ]
             }
             

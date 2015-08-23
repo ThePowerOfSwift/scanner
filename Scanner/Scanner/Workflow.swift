@@ -21,4 +21,8 @@ class Workflow {
         self.selectedPage = page
     }
     
+    func deselectedPage() {
+        self.selectedPage = nil
+    }
+    
 }

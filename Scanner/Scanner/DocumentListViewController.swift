@@ -122,9 +122,5 @@ class DocumentListViewController:
         
         self.presentViewController(documentNamePrompt, animated:true, completion:nil)
     }
-    
-    @IBAction func unwindToDocuments(segue:UIStoryboardSegue) {
-        
-    }
 }
 
