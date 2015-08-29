@@ -19,6 +19,9 @@ class PageItemViewModel {
 
 class PagesViewModel {
     static let ViewModelChangedNotification = "PagesViewModelChangedNotification"
+    static let ViewModelChangedNotificationAddedPages = "PagesViewModelChangedNotificationAddedPages"
+    static let ViewModelChangedNotificationUpdatedPages = "PagesViewModelChangedNotificationUpdatedPages"
+    static let ViewModelChangedNotificationDeletedPages = "PagesViewModelChangedNotificationDeletedPages"
     
     private let documentStore:DocumentStore
     private let workflow:Workflow
@@ -41,7 +44,26 @@ class PagesViewModel {
         
         self.observerToken = NSNotificationCenter.defaultCenter().addObserverForName(DocumentStore.StoreSavedNotification, object: self.documentStore, queue: nil) {
             [unowned self] (notification) -> Void in
-            self.refresh()
+            
+            let updatedDocuments = notification.userInfo![DocumentStore.StoreSavedNotificationUpdatedDocuments]
+                as! DocumentStore.StoreSavedNotificationUpdatedDocumentsType
+            
+            if let updateInfo = updatedDocuments[self.document] {
+                self.refresh()
+                
+                var userInfo = [NSObject:AnyObject]()
+                
+                if let addedPages = updateInfo[DocumentStore.StoreSavedNotificationAddedPages] {
+                    if addedPages.count > 0 {
+                        userInfo[PagesViewModel.ViewModelChangedNotificationAddedPages] = addedPages
+                    }
+                }
+                
+                NSNotificationCenter.defaultCenter().postNotificationName(
+                    PagesViewModel.ViewModelChangedNotification,
+                    object: self,
+                    userInfo: userInfo)
+            }
         }
         
         self.refresh()
@@ -66,6 +88,5 @@ class PagesViewModel {
             let image = page.loadThumbnail()!
             return PageItemViewModel(image) // TODO: error handling
         }
-        NSNotificationCenter.defaultCenter().postNotificationName(PagesViewModel.ViewModelChangedNotification, object: self)
     }
 }

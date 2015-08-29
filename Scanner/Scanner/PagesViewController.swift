@@ -8,18 +8,70 @@
 
 import UIKit
 
-class ImageZoomerScrollView : UIScrollView {
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        let view = self.delegate!.viewForZoomingInScrollView!(self)!
-        
-        if view.frame.width < self.bounds.width {
-            view.frame.origin.x = (self.bounds.width - view.frame.width) / 2
+class PagedCollectionView : UICollectionView {
+    
+    var currentPage: Int {
+        get {
+            return Int(round(self.contentOffset.x / self.bounds.width))
         }
-        if view.frame.height < self.bounds.height {
-            view.frame.origin.y = (self.bounds.height - view.frame.height) / 2
+        set {
+            self.setCurrentPage(newValue, animated: false)
         }
     }
+    
+    func setCurrentPage(currentPage: Int, animated: Bool) {
+        self.setContentOffset(CGPoint(x: self.bounds.width * CGFloat(currentPage), y: 0), animated: animated)
+    }
+    
+    var flowLayout: UICollectionViewFlowLayout {
+        get { return self.collectionViewLayout as! UICollectionViewFlowLayout }
+    }
+    
+    override var bounds: CGRect {
+        get { return super.bounds }
+        set {
+            let sizeChanged = newValue.size != self.bounds.size
+            let currentPage = self.currentPage
+            
+            super.bounds = newValue
+            
+            if sizeChanged {
+                self.flowLayout.itemSize = newValue.size
+                self.currentPage = currentPage
+            }
+        }
+    }
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        self.pagingEnabled = true
+        self.flowLayout.minimumInteritemSpacing = 0
+        self.flowLayout.minimumLineSpacing = 0
+        self.flowLayout.scrollDirection = UICollectionViewScrollDirection.Horizontal
+        self.flowLayout.sectionInset = UIEdgeInsetsZero
+        self.flowLayout.headerReferenceSize = CGSizeZero
+        self.flowLayout.footerReferenceSize = CGSizeZero
+    }
+}
+
+class ImageZoomerScrollView : UIScrollView {
+//    override func layoutSubviews() {
+//        super.layoutSubviews()
+//        
+//        let view = self.delegate!.viewForZoomingInScrollView!(self)!
+//        
+//        if view.frame.width < self.bounds.width {
+//            view.frame.origin.x = (self.bounds.width - view.frame.width) / 2
+//        } else {
+//            view.frame.origin.x = 0
+//        }
+//        
+//        if view.frame.height < self.bounds.height {
+//            view.frame.origin.y = (self.bounds.height - view.frame.height) / 2
+//        } else {
+//            view.frame.origin.y = 0
+//        }
+//    }
 }
 
 class ShowPageSegue: UIStoryboardSegue, UIViewControllerAnimatedTransitioning, UIViewControllerTransitioningDelegate {
@@ -114,6 +166,17 @@ class PageCollectionViewCell: UICollectionViewCell, UIScrollViewDelegate {
     func viewForZoomingInScrollView(scrollView: UIScrollView) -> UIView? {
         return self.imageView
     }
+    
+    func scrollViewDidZoom(scrollView: UIScrollView) {
+        scrollView.scrollEnabled = scrollView.zoomScale != scrollView.minimumZoomScale
+        let horizontalInset = max(0, self.scrollView.bounds.width - self.imageView.frame.width) / 2
+        let verticalInset = max(0, self.scrollView.bounds.height - self.imageView.frame.height) / 2
+        scrollView.contentInset = UIEdgeInsets(
+            top: verticalInset,
+            left: horizontalInset,
+            bottom: verticalInset,
+            right: horizontalInset);
+    }
 }
 
 class PagesViewController:
@@ -125,25 +188,18 @@ class PagesViewController:
 
     private var viewModel:PagesViewModel!
     private var observerToken:NSObjectProtocol!
-    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet weak var collectionView: PagedCollectionView!
     @IBOutlet weak var editButton: UIBarButtonItem!
     
     deinit {
         NSNotificationCenter.defaultCenter().removeObserver(observerToken)
     }
     
-    private var visiblePageIndex: Int {
-        get {
-            return Int(round(self.collectionView.contentOffset.x / self.collectionView.bounds.width))
-        }
-    }
-    
     private var visibleCell: PageCollectionViewCell? {
         get {
             if self.viewModel.pages.count > 0 {
-                return
-                    self.collectionView.cellForItemAtIndexPath(NSIndexPath(forItem: self.visiblePageIndex, inSection: 0))
-                    as? PageCollectionViewCell
+                let indexPath = NSIndexPath(forItem: self.collectionView.currentPage, inSection: 0)
+                return self.collectionView.cellForItemAtIndexPath(indexPath) as? PageCollectionViewCell
             } else {
                 return nil
             }
@@ -156,31 +212,22 @@ class PagesViewController:
         self.viewModel = ViewModelFactory.sharedInstance.pagesViewModel()
         self.navigationItem.title = self.viewModel.documentTitle
         
-        let layout = self.collectionView.collectionViewLayout as! UICollectionViewFlowLayout
-        layout.minimumInteritemSpacing = 0
-        layout.minimumLineSpacing = 0
-        layout.scrollDirection = UICollectionViewScrollDirection.Horizontal
-        layout.sectionInset = UIEdgeInsetsZero
-        layout.headerReferenceSize = CGSizeZero
-        layout.footerReferenceSize = CGSizeZero
-        
         self.editButton.enabled = self.viewModel.pages.count > 0
         
-        self.observerToken = NSNotificationCenter.defaultCenter().addObserverForName(PagesViewModel.ViewModelChangedNotification, object: self.viewModel, queue: nil) {
+        self.observerToken = NSNotificationCenter.defaultCenter().addObserverForName(
+            PagesViewModel.ViewModelChangedNotification,
+            object: self.viewModel,
+            queue: nil) {
             [unowned self] (notification) -> Void in
-            self.collectionView.reloadData()
-            self.editButton.enabled = self.viewModel.pages.count > 0
-        }
-    }
-    
-    override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
-        super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
-        self.refreshCollectionViewItemSize()
-    }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        self.refreshCollectionViewItemSize()
+                self.collectionView.reloadData()
+                self.editButton.enabled = self.viewModel.pages.count > 0
+                if let addedPages: AnyObject = notification.userInfo?[PagesViewModel.ViewModelChangedNotificationAddedPages] {
+                    let addedPagesSet = addedPages as! Set<Page>
+                    if addedPagesSet.count > 0 {
+                        self.collectionView.currentPage = self.viewModel.pages.count - 1
+                    }
+                }
+            }
     }
     
     override func viewDidDisappear(animated: Bool) {
@@ -189,11 +236,6 @@ class PagesViewController:
             cell.scrollView.contentOffset = CGPointZero
             cell.scrollView.zoomScale = cell.scrollView.minimumZoomScale
         }
-    }
-    
-    private func refreshCollectionViewItemSize() {
-        let layout = self.collectionView.collectionViewLayout as! UICollectionViewFlowLayout
-        layout.itemSize = self.collectionView.bounds.size
     }
     
     @IBAction func addPageButtonPressed(sender: AnyObject) {
@@ -223,18 +265,26 @@ class PagesViewController:
         cell.imageWidth.constant = thumbnail.size.width
         cell.imageHeight.constant = thumbnail.size.height
         
-        let layout = self.collectionView.collectionViewLayout as! UICollectionViewFlowLayout
         cell.scrollView.minimumZoomScale = min(
-            (layout.itemSize.width - 2*10) / thumbnail.size.width,
-            layout.itemSize.height / thumbnail.size.height)
-        cell.scrollView.zoomScale = cell.scrollView.minimumZoomScale
+            (collectionView.bounds.width - 2*10) / thumbnail.size.width,
+            collectionView.bounds.height / thumbnail.size.height)
         cell.scrollView.maximumZoomScale = 5 * cell.scrollView.minimumZoomScale
+        cell.scrollView.zoomScale = cell.scrollView.minimumZoomScale
+        let horizontalInset = max(0, (collectionView.bounds.width - 2*10) - thumbnail.size.width * cell.scrollView.zoomScale) / 2
+        let verticalInset = max(0, collectionView.bounds.height - thumbnail.size.height * cell.scrollView.zoomScale) / 2
+        cell.scrollView.contentInset = UIEdgeInsets(
+            top: verticalInset,
+            left: horizontalInset,
+            bottom: verticalInset,
+            right: horizontalInset)
+        
+        cell.scrollView.scrollEnabled = false
         
         return cell
     }
     
     @IBAction func editButtonPressed(sender: AnyObject) {
-        self.viewModel.selectPageAtIndex(self.visiblePageIndex)
+        self.viewModel.selectPageAtIndex(self.collectionView.currentPage)
         self.performSegueWithIdentifier("ShowPageSegue", sender: sender)
     }
 }

@@ -10,28 +10,37 @@ import Foundation
 import UIKit
 import ImageIO
 
-class Page : Equatable {
-    unowned private let store:DocumentStore
+class Page : Equatable, Hashable {
+    var hashValue: Int { get { return ObjectIdentifier(self).hashValue } }
+    
+    unowned private let document:Document
     
     private let imageName:String
-    var cropRect:CGRect
+    var cropRect:CGRect {
+        didSet {
+            if find(self.document.updatedPages, self) == nil {
+                self.document.updatedPages.insert(self)
+                self.document.store.updatedDocuments.insert(self.document)
+            }
+        }
+    }
     
-    private init(store:DocumentStore, imageName:String, cropRect:CGRect) {
-        self.store = store
+    private init(document:Document, imageName:String, cropRect:CGRect) {
+        self.document = document
         self.imageName = imageName
         self.cropRect = cropRect
     }
     
     func loadRawImage() -> UIImage? {
-        return imageAtPath(self.store.pathForName(self.imageName))
+        return imageAtPath(self.document.store.pathForName(self.imageName))
     }
     
     func loadImage() -> UIImage? {
-        return imageAtPath(self.store.pathForName(self.imageName), self.cropRect)
+        return imageAtPath(self.document.store.pathForName(self.imageName), self.cropRect)
     }
     
     func loadThumbnail() -> UIImage? {
-        return thumbnailFromImage(self.store.pathForName(self.imageName), self.cropRect)
+        return thumbnailFromImage(self.document.store.pathForName(self.imageName), self.cropRect)
     }
 }
 
@@ -39,11 +48,23 @@ func ==(a:Page, b:Page) -> Bool {
     return a === b
 }
 
-class Document : Equatable {
+class Document : Equatable, Hashable {
+    var hashValue: Int { get { return ObjectIdentifier(self).hashValue } }
+    
     unowned private let store:DocumentStore
     
-    var title:String?
+    var title:String? {
+        didSet {
+            if find(self.store.updatedDocuments, self) == nil {
+                self.store.updatedDocuments.insert(self)
+            }
+        }
+    }
     private(set) var pages:[Page] = []
+    
+    private var addedPages:Set<Page> = []
+    private var updatedPages:Set<Page> = []
+    private var deletedPages:Set<Page> = []
     
     private init(_ store:DocumentStore) {
         self.store = store
@@ -53,8 +74,10 @@ class Document : Equatable {
         let imageName = NSUUID.new().UUIDString
         if let imageData = UIImageJPEGRepresentation(image, 0.9) {
             if self.store.storeDataWithName(imageData, name: imageName) {
-                let page = Page(store: self.store, imageName: imageName, cropRect: CGRect(origin: CGPointZero, size: image.size))
+                let page = Page(document: self, imageName: imageName, cropRect: CGRect(origin: CGPointZero, size: image.size))
                 self.pages.append(page)
+                self.addedPages.insert(page)
+                self.store.updatedDocuments.insert(self)
                 
                 return page
             }
@@ -65,6 +88,8 @@ class Document : Equatable {
     func deletePage(page:Page) {
         self.pages.removeAtIndex(find(self.pages, page)!)
         self.store.itemsToBeDeleted.append(page.imageName)
+        self.deletedPages.insert(page)
+        self.store.updatedDocuments.insert(self)
     }
 }
 
@@ -73,8 +98,22 @@ func ==(a:Document, b:Document) -> Bool {
 }
 
 class DocumentStore {
-    // TODO: keep track of documents added/updated/deleted since last save and include them in the notification
     static let StoreSavedNotification = "StoreSavedNotification"
+    
+    static let StoreSavedNotificationAddedDocuments = "StoreSavedNotificationAddedDocuments"
+    static let StoreSavedNotificationUpdatedDocuments = "StoreSavedNotificationUpdatedDocuments"
+    static let StoreSavedNotificationDeletedDocuments = "StoreSavedNotificationDeletedDocuments"
+    
+    static let StoreSavedNotificationAddedPages = "StoreSavedNotificationAddedPages"
+    static let StoreSavedNotificationUpdatedPages = "StoreSavedNotificationUpdatedPages"
+    static let StoreSavedNotificationDeletedPages = "StoreSavedNotificationDeletedPages"
+    
+    typealias StoreSavedNotificationAddedPagesType = Set<Page>
+    typealias StoreSavedNotificationUpdatedPagesType = Set<Page>
+    typealias StoreSavedNotificationDeletedPagesType = Set<Page>
+    typealias StoreSavedNotificationAddedDocumentsType = Set<Document>
+    typealias StoreSavedNotificationUpdatedDocumentsType = [Document:[String:Set<Page>]]
+    typealias StoreSavedNotificationDeletedDocumentsType = Set<Document>
     
     private let fileManager:NSFileManager
     
@@ -82,6 +121,11 @@ class DocumentStore {
     private(set) var documents:[Document] = []
     
     private var itemsToBeDeleted:[String] = []
+    
+    // tracking added/updated/deleted documents for notifications
+    private var addedDocuments:Set<Document> = []
+    private var updatedDocuments:Set<Document> = []
+    private var deletedDocuments:Set<Document> = []
     
     init?(fileManager:NSFileManager, path:String) {
         self.fileManager = fileManager
@@ -108,7 +152,7 @@ class DocumentStore {
                             let cropRect:CGRect? = cropRectString != nil ? CGRectFromString(cropRectString) : nil
                             
                             if imageName != nil && cropRect != nil {
-                                let page = Page(store: self, imageName: imageName!, cropRect: cropRect!)
+                                let page = Page(document: document, imageName: imageName!, cropRect: cropRect!)
                                 document.pages.append(page)
                             }
                         }
@@ -116,6 +160,10 @@ class DocumentStore {
                         if let title = archivedDocument["title"] as? String {
                             document.title = title
                         }
+                        
+                        document.addedPages = []
+                        document.updatedPages = []
+                        document.deletedPages = []
                         
                         self.documents.append(document)
                     }
@@ -185,7 +233,31 @@ class DocumentStore {
             }
             self.itemsToBeDeleted = []
             
-            NSNotificationCenter.defaultCenter().postNotificationName(DocumentStore.StoreSavedNotification, object: self, userInfo: nil)
+            var updatedDocumentsInfo = DocumentStore.StoreSavedNotificationUpdatedDocumentsType()
+            for updatedDocument in self.updatedDocuments {
+                updatedDocumentsInfo[updatedDocument] = [
+                    DocumentStore.StoreSavedNotificationAddedPages : updatedDocument.addedPages,
+                    DocumentStore.StoreSavedNotificationUpdatedPages : updatedDocument.updatedPages,
+                    DocumentStore.StoreSavedNotificationDeletedPages : updatedDocument.deletedPages
+                ]
+                updatedDocument.addedPages = []
+                updatedDocument.updatedPages = []
+                updatedDocument.deletedPages = []
+            }
+            
+            var userInfo = [NSObject:AnyObject]()
+            userInfo[DocumentStore.StoreSavedNotificationAddedDocuments] = self.addedDocuments
+            userInfo[DocumentStore.StoreSavedNotificationUpdatedDocuments] = updatedDocumentsInfo
+            userInfo[DocumentStore.StoreSavedNotificationDeletedDocuments] = self.deletedDocuments
+            
+            self.addedDocuments = []
+            self.updatedDocuments = []
+            self.deletedDocuments = []
+            
+            NSNotificationCenter.defaultCenter().postNotificationName(
+                DocumentStore.StoreSavedNotification,
+                object: self,
+                userInfo: userInfo)
         }
         
         return didStore
