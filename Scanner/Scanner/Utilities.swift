@@ -12,6 +12,20 @@ import ImageIO
 
 private let maxThumbnailSize:Int = 500
 
+func saturate<T: Comparable>(x: T, min: T, max: T) -> T {
+    if x < min {
+        return min
+    } else if x > max {
+        return max
+    } else {
+        return x
+    }
+}
+
+func CGSizeMakeSquare(size: CGFloat) -> CGSize {
+    return CGSize(width: size, height: size)
+}
+
 func CGSizeAspectRatio(size: CGSize) -> CGFloat {
     return size.width / size.height
 }
@@ -75,16 +89,19 @@ func imageAtPath(path:String, cropRect:CGRect) -> UIImage? {
         let cgImage = image.CGImage
         let width = CGImageGetWidth(cgImage)
         let height = CGImageGetHeight(cgImage)
-        let cropRectInBitmapSpace = CGRectApplyAffineTransform(cropRect, imageToBitmapTransformForOrientation(image.imageOrientation, CGFloat(width), CGFloat(height)))
-        let croppedImage = CGImageCreateWithImageInRect(cgImage, cropRectInBitmapSpace)
-        return UIImage(CGImage: croppedImage, scale: image.scale, orientation: image.imageOrientation)
+        let cropRectInBitmapSpace = CGRectApplyAffineTransform(cropRect, imageToBitmapTransformForOrientation(image.imageOrientation, width: CGFloat(width), height: CGFloat(height)))
+        if let croppedImage = CGImageCreateWithImageInRect(cgImage, cropRectInBitmapSpace) {
+            return UIImage(CGImage: croppedImage, scale: image.scale, orientation: image.imageOrientation)
+        } else {
+            return nil
+        }
     } else {
         return nil
     }
 }
 
 func thumbnailFromImage(path:String, cropRect:CGRect) -> UIImage? {
-    if let croppedImage = imageAtPath(path, cropRect) {
+    if let croppedImage = imageAtPath(path, cropRect: cropRect) {
     
         let croppedCGImage = croppedImage.CGImage
         let width = CGImageGetWidth(croppedCGImage)
@@ -104,15 +121,17 @@ func thumbnailFromImage(path:String, cropRect:CGRect) -> UIImage? {
             thumbnailWidth,
             thumbnailHeight,
             CGImageGetBitsPerComponent(croppedCGImage),
-            CGImageGetBytesPerRow(croppedCGImage),
+            CGImageGetBytesPerRow(croppedCGImage) / width * thumbnailWidth,
             CGImageGetColorSpace(croppedCGImage),
-            CGImageGetBitmapInfo(croppedCGImage))
+            CGImageGetBitmapInfo(croppedCGImage).rawValue)
         
         CGContextDrawImage(thumbnailContext, CGRect(x: 0, y: 0, width: thumbnailWidth, height: thumbnailHeight), croppedCGImage)
         
-        let thumbnail = CGBitmapContextCreateImage(thumbnailContext)
-        
-        return UIImage(CGImage: thumbnail, scale: croppedImage.scale, orientation: croppedImage.imageOrientation)
+        if let thumbnail = CGBitmapContextCreateImage(thumbnailContext) {
+            return UIImage(CGImage: thumbnail, scale: croppedImage.scale, orientation: croppedImage.imageOrientation)
+        } else {
+            return nil
+        }
     } else {
         return nil
     }

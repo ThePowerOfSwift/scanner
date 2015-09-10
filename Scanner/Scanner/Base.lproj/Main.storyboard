@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14F27" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="ZmA-7N-TZC">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="8187.4" systemVersion="14F27" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="ZmA-7N-TZC">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7703"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8151.3"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
@@ -14,7 +15,7 @@
                         <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="64" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="kD7-j5-0D1">
@@ -62,6 +63,7 @@
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <toolbar key="toolbar" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="Ytw-kF-5IC">
+                        <rect key="frame" x="0.0" y="556" width="600" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </toolbar>
                     <connections>
@@ -85,17 +87,17 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="BSe-ic-mNh" customClass="PagedCollectionView" customModule="Scanner" customModuleProvider="target">
-                                <rect key="frame" x="-10" y="64" width="620" height="492"/>
+                                <rect key="frame" x="-10" y="64" width="620" height="441"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="Rt3-RM-LUf">
+                                <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="Rt3-RM-LUf">
                                     <size key="itemSize" width="200" height="200"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                    <inset key="sectionInset" minX="10" minY="10" maxX="10" maxY="10"/>
+                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="PageCell" id="66A-l0-b8P" customClass="PageCollectionViewCell" customModule="Scanner" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="200" height="200"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="200" height="200"/>
@@ -144,13 +146,58 @@
                                     <outlet property="delegate" destination="aBV-6N-TYS" id="IPq-x7-B26"/>
                                 </connections>
                             </collectionView>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="480-Zx-waT" customClass="PagesCollectionView" customModule="Scanner" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="506" width="600" height="50"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="Veu-WC-eN0"/>
+                                </constraints>
+                                <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="1" minimumInteritemSpacing="0.0" id="Fsf-HM-mlQ">
+                                    <size key="itemSize" width="50" height="50"/>
+                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                                <cells>
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="MiniPageCell" id="g7k-TJ-vbf" customClass="MiniPageCollectionViewCell" customModule="Scanner" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                                            <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="m3e-pj-rvx">
+                                                    <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                                </imageView>
+                                            </subviews>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                        </view>
+                                        <constraints>
+                                            <constraint firstAttribute="bottom" secondItem="m3e-pj-rvx" secondAttribute="bottom" id="NQn-bc-8Ml"/>
+                                            <constraint firstItem="m3e-pj-rvx" firstAttribute="top" secondItem="g7k-TJ-vbf" secondAttribute="top" id="QWU-zF-pFE"/>
+                                            <constraint firstItem="m3e-pj-rvx" firstAttribute="leading" secondItem="g7k-TJ-vbf" secondAttribute="leading" id="idC-fD-yM6"/>
+                                            <constraint firstAttribute="trailing" secondItem="m3e-pj-rvx" secondAttribute="trailing" id="lcO-zv-dRI"/>
+                                        </constraints>
+                                        <connections>
+                                            <outlet property="imageView" destination="m3e-pj-rvx" id="pea-ru-E6x"/>
+                                        </connections>
+                                    </collectionViewCell>
+                                </cells>
+                                <connections>
+                                    <outlet property="dataSource" destination="aBV-6N-TYS" id="n9A-11-7zz"/>
+                                    <outlet property="delegate" destination="aBV-6N-TYS" id="vvB-I1-LYP"/>
+                                </connections>
+                            </collectionView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="BSe-ic-mNh" firstAttribute="top" secondItem="Cus-tc-jhg" secondAttribute="bottom" id="AFr-3S-vYt"/>
                             <constraint firstAttribute="trailing" secondItem="BSe-ic-mNh" secondAttribute="trailing" constant="-10" id="Igy-DK-fz0"/>
                             <constraint firstItem="BSe-ic-mNh" firstAttribute="leading" secondItem="vlX-0o-fFO" secondAttribute="leading" constant="-10" id="ZEM-TC-n3K"/>
-                            <constraint firstItem="BTM-MJ-1HW" firstAttribute="top" secondItem="BSe-ic-mNh" secondAttribute="bottom" id="tBZ-38-OHD"/>
+                            <constraint firstItem="480-Zx-waT" firstAttribute="top" secondItem="BSe-ic-mNh" secondAttribute="bottom" constant="1" id="ZL7-OB-r58"/>
+                            <constraint firstAttribute="trailing" secondItem="480-Zx-waT" secondAttribute="trailing" id="aO0-x3-gxx"/>
+                            <constraint firstItem="BTM-MJ-1HW" firstAttribute="top" secondItem="480-Zx-waT" secondAttribute="bottom" id="rNs-Lw-b7m"/>
+                            <constraint firstItem="480-Zx-waT" firstAttribute="leading" secondItem="vlX-0o-fFO" secondAttribute="leading" id="vnR-Wp-X52"/>
                         </constraints>
                     </view>
                     <toolbarItems>
@@ -170,6 +217,7 @@
                     <connections>
                         <outlet property="collectionView" destination="BSe-ic-mNh" id="TZw-oR-ycN"/>
                         <outlet property="editButton" destination="6oJ-v1-PEi" id="EOI-UO-VHr"/>
+                        <outlet property="pagesCollectionView" destination="480-Zx-waT" id="OCx-W2-ROY"/>
                         <segue destination="ykg-BS-nwf" kind="custom" identifier="ShowPageSegue" customClass="ShowPageSegue" customModule="Scanner" customModuleProvider="target" id="ueI-59-pe1"/>
                     </connections>
                 </viewController>

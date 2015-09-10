@@ -118,7 +118,7 @@ class PageViewController: UIViewController, UIScrollViewDelegate {
         self.updateMaskLayerAnimated(false)
     }
     
-    override func actionForLayer(layer: CALayer!, forKey event: String!) -> CAAction! {
+    override func actionForLayer(layer: CALayer, forKey event: String) -> CAAction? {
         if event == "path" || event == "opacity" {
             let action = CABasicAnimation(keyPath: event)
             action.duration = CATransaction.animationDuration()
@@ -182,10 +182,10 @@ class PageViewController: UIViewController, UIScrollViewDelegate {
             let bottomRightCorner = CGPoint(x: bottomLeftCorner.x + self.cropRectView.bounds.width, y: bottomLeftCorner.y)
             let topRightCorner = CGPoint(x: bottomRightCorner.x, y: topLeftCorner.y)
             
-            let leftEdgeDistance = pointLineDistance(panStart, topLeftCorner, bottomLeftCorner)
-            let bottomEdgeDistance = pointLineDistance(panStart, bottomLeftCorner, bottomRightCorner)
-            let rightEdgeDistance = pointLineDistance(panStart, bottomRightCorner, topRightCorner)
-            let topEdgeDistance = pointLineDistance(panStart, topRightCorner, topLeftCorner)
+            let leftEdgeDistance = pointLineDistance(panStart, linePoint1: topLeftCorner, linePoint2: bottomLeftCorner)
+            let bottomEdgeDistance = pointLineDistance(panStart, linePoint1: bottomLeftCorner, linePoint2: bottomRightCorner)
+            let rightEdgeDistance = pointLineDistance(panStart, linePoint1: bottomRightCorner, linePoint2: topRightCorner)
+            let topEdgeDistance = pointLineDistance(panStart, linePoint1: topRightCorner, linePoint2: topLeftCorner)
             
             if leftEdgeDistance < 20 {
                 if topEdgeDistance < 20 {
@@ -273,10 +273,6 @@ class PageViewController: UIViewController, UIScrollViewDelegate {
             self.cropPanMode = nil
             
             let cropRect = self.imageView.convertRect(self.cropRectView.bounds, fromView: self.cropRectView)
-            
-            let growthFactor = min(
-                self.cropViewMaxWidth / self.cropRectView.frame.width,
-                self.cropViewMaxHeight / self.cropRectView.frame.height)
             
             self.setScrollViewConstraintsForCropRect(cropRect)
             

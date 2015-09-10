@@ -12,7 +12,7 @@ class MainNavigationController : UINavigationController, UIGestureRecognizerDele
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.interactivePopGestureRecognizer.delegate = self
+        self.interactivePopGestureRecognizer!.delegate = self
     }
     
     func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldReceiveTouch touch: UITouch) -> Bool {

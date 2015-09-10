@@ -18,7 +18,7 @@ class Page : Equatable, Hashable {
     private let imageName:String
     var cropRect:CGRect {
         didSet {
-            if find(self.document.updatedPages, self) == nil {
+            if self.document.updatedPages.indexOf(self) == nil {
                 self.document.updatedPages.insert(self)
                 self.document.store.updatedDocuments.insert(self.document)
             }
@@ -36,11 +36,11 @@ class Page : Equatable, Hashable {
     }
     
     func loadImage() -> UIImage? {
-        return imageAtPath(self.document.store.pathForName(self.imageName), self.cropRect)
+        return imageAtPath(self.document.store.pathForName(self.imageName), cropRect: self.cropRect)
     }
     
     func loadThumbnail() -> UIImage? {
-        return thumbnailFromImage(self.document.store.pathForName(self.imageName), self.cropRect)
+        return thumbnailFromImage(self.document.store.pathForName(self.imageName), cropRect: self.cropRect)
     }
 }
 
@@ -55,7 +55,7 @@ class Document : Equatable, Hashable {
     
     var title:String? {
         didSet {
-            if find(self.store.updatedDocuments, self) == nil {
+            if self.store.updatedDocuments.indexOf(self) == nil {
                 self.store.updatedDocuments.insert(self)
             }
         }
@@ -71,7 +71,7 @@ class Document : Equatable, Hashable {
     }
     
     func createPage(image:UIImage) -> Page? {
-        let imageName = NSUUID.new().UUIDString
+        let imageName = NSUUID().UUIDString
         if let imageData = UIImageJPEGRepresentation(image, 0.9) {
             if self.store.storeDataWithName(imageData, name: imageName) {
                 let page = Page(document: self, imageName: imageName, cropRect: CGRect(origin: CGPointZero, size: image.size))
@@ -86,7 +86,7 @@ class Document : Equatable, Hashable {
     }
     
     func deletePage(page:Page) {
-        self.pages.removeAtIndex(find(self.pages, page)!)
+        self.pages.removeAtIndex(self.pages.indexOf(page)!)
         self.store.itemsToBeDeleted.append(page.imageName)
         self.deletedPages.insert(page)
         self.store.updatedDocuments.insert(self)
@@ -132,10 +132,9 @@ class DocumentStore {
         self.path = path
         
         if !self.fileManager.fileExistsAtPath(path) {
-            var error:NSErrorPointer = nil
-            let didCreate = self.fileManager.createDirectoryAtPath(path, withIntermediateDirectories: true, attributes: nil, error: error)
-            
-            if !didCreate {
+            do {
+                try self.fileManager.createDirectoryAtPath(path, withIntermediateDirectories: true, attributes: nil)
+            } catch {
                 return nil
             }
         }
@@ -149,7 +148,7 @@ class DocumentStore {
                         for archivedPage in archivedPages {
                             let imageName = archivedPage["imageName"] as? String
                             let cropRectString = archivedPage["cropRect"] as? String
-                            let cropRect:CGRect? = cropRectString != nil ? CGRectFromString(cropRectString) : nil
+                            let cropRect:CGRect? = cropRectString != nil ? CGRectFromString(cropRectString!) : nil
                             
                             if imageName != nil && cropRect != nil {
                                 let page = Page(document: document, imageName: imageName!, cropRect: cropRect!)
@@ -179,14 +178,14 @@ class DocumentStore {
     }
     
     func deleteDocument(document:Document) {
-        let document = self.documents.removeAtIndex(find(self.documents, document)!)
+        let document = self.documents.removeAtIndex(self.documents.indexOf(document)!)
         for page in document.pages {
             self.itemsToBeDeleted.append(page.imageName)
         }
     }
     
     private func pathForName(name:String) -> String {
-        return self.path.stringByAppendingPathComponent(name)
+        return self.path + "/" + name
     }
     
     private func storeDataWithName(data:NSData, name:String) -> Bool {
@@ -196,7 +195,12 @@ class DocumentStore {
     
     private func deleteDataWithName(name:String) -> Bool {
         let path = self.pathForName(name)
-        return self.fileManager.removeItemAtPath(path, error: nil)
+        do {
+            try self.fileManager.removeItemAtPath(path)
+            return true
+        } catch _ {
+            return false
+        }
     }
     
     private func loadDataWithName(name:String) -> NSData? {

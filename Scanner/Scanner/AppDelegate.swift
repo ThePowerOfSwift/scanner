@@ -15,10 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         
-        let documentStorePath = NSHomeDirectory()
-            .stringByAppendingPathComponent("Documents")
-            .stringByAppendingPathComponent("DocumentStore")
-        
+        let documentStorePath = NSHomeDirectory() + "/Documents/DocumentStore"
         let documentStore = DocumentStore(fileManager: NSFileManager.defaultManager(), path: documentStorePath)
         let workflow = Workflow()
         

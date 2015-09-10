@@ -55,7 +55,7 @@ class DocumentListViewController:
         return UITableViewCellEditingStyle.Delete
     }
     
-    func tableView(tableView: UITableView, editActionsForRowAtIndexPath indexPath: NSIndexPath) -> [AnyObject]? {
+    func tableView(tableView: UITableView, editActionsForRowAtIndexPath indexPath: NSIndexPath) -> [UITableViewRowAction]? {
         return [
             UITableViewRowAction(style: UITableViewRowActionStyle.Default, title: "Delete", handler: {
                 [unowned self] (action, indexPath) -> Void in
@@ -84,8 +84,8 @@ class DocumentListViewController:
         
         let addAction = UIAlertAction(title: "Rename", style: UIAlertActionStyle.Default) {
             [unowned self, unowned renamePrompt] action in
-            let nameTextField = renamePrompt.textFields![0] as! UITextField
-            self.viewModel.renameDocumentAtIndex(index, newTitle:nameTextField.text)
+            let nameTextField = renamePrompt.textFields![0] 
+            self.viewModel.renameDocumentAtIndex(index, newTitle:nameTextField.text!)
             self.dismissViewControllerAnimated(true, completion: nil)
         }
         
@@ -112,8 +112,8 @@ class DocumentListViewController:
         
         let addAction = UIAlertAction(title: "Add", style: UIAlertActionStyle.Default) {
             [unowned self, unowned documentNamePrompt] action in
-            let nameTextField = documentNamePrompt.textFields![0] as! UITextField
-            self.viewModel.createDocumentWithName(nameTextField.text)
+            let nameTextField = documentNamePrompt.textFields![0] 
+            self.viewModel.createDocumentWithName(nameTextField.text!)
             self.dismissViewControllerAnimated(true, completion: nil)
         }
         
